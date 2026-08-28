@@ -1,0 +1,27 @@
+[
+  {
+    "question": "Une équipe a-t-elle déjà atteint les Finales NBA sans avoir eu l'avantage du terrain lors d'aucune des trois premières rondes des playoffs, comme cela vient d'arriver aux Oilers en NHL ?",
+    "ground_truth": "Non, cela ne s'est jamais produit dans l'histoire de la NBA. Pour qu'une équipe atteigne les Finales sans avoir jamais eu l'avantage du terrain (y compris en Finale), il faudrait qu'elle soit au minimum 5e tête de série, configuration qui ne s'est jamais réalisée. Le cas le plus proche reste celui des Rockets de Houston en 1995, tête de série n°6, qui ont remporté le titre en battant les quatre meilleures équipes de la ligue sans jamais bénéficier de l'avantage du terrain lors des trois premières rondes ; ils l'ont toutefois obtenu en Finale, face à une équipe encore moins bien classée. Six équipes ont par ailleurs atteint les Finales avec un seed inférieur à 4 dans l'ère moderne, mais aucune n'a eu l'avantage du terrain en Finale.",
+    "category": "Textuel / Historique"
+  },
+  {
+    "question": "Sur la base d'une analyse comparative utilisant le rTS% (True Shooting relatif à l'ère), quel joueur ressort comme l'option n°1 la plus efficace de l'histoire des playoffs NBA, et quel est son écart avec le second du classement ?",
+    "ground_truth": "Reggie Miller ressort comme l'option n°1 la plus efficace de l'histoire des playoffs, avec un rTS% de 114 sur 2972 points marqués en playoffs. Kawhi Leonard est le seul joueur qui s'en approche réellement, avec un rTS% de 112 sur 3133 points. L'écart brut entre Reggie Miller et même Stephen Curry (rTS% de 110) est aussi important que l'écart entre Michael Jordan et Kobe Bryant sur ce même classement.",
+    "category": "Textuel / Historique"
+  },
+  {
+    "question": "Quelles étaient les principales raisons pour lesquelles une potentielle finale Thunder vs Pacers était perçue comme un « snoozefest » malgré le fait que ces deux équipes soient statistiquement parmi les meilleures des playoffs ?",
+    "ground_truth": "Plusieurs facteurs expliquent cette perception : l'absence de grandes stars médiatiques historiques (comme LeBron ou Curry) capables d'attirer le public occasionnel, la taille réduite des marchés médiatiques d'Oklahoma City et d'Indiana, le manque de diffusion nationale des matchs des Pacers pendant la saison régulière (empêchant le grand public de découvrir leur niveau de jeu), et le fait que SGA venait tout juste d'obtenir son statut de superstar (2e année seulement). En se basant sur le net rating en playoffs, le Thunder et les Pacers n'étaient toutefois respectivement que 2e et 5e, ce qui relativise l'idée qu'il s'agissait des « deux meilleures équipes » selon toutes les statistiques avancées.",
+    "category": "Textuel / Historique"
+  },
+  {
+    "question": "Quel joueur affiche le total de points le plus élevé sur la saison régulière, et combien de points a-t-il inscrits ?",
+    "ground_truth": "Shai Gilgeous-Alexander (OKC) est le meilleur marqueur de la saison régulière avec 2485 points inscrits en 76 matchs joués, soit une moyenne d'environ 32,7 points par match. Il devance Anthony Edwards (MIN, 2180 points) et Nikola Jokić (DEN, 2072 points).",
+    "category": "Chiffré / Analytique"
+  },
+  {
+    "question": "Parmi les joueurs ayant tenté au moins 100 tirs à 3 points sur la saison, qui affiche le meilleur pourcentage de réussite à 3 points (3P%), et quelles sont ses statistiques associées ?",
+    "ground_truth": "Seth Curry (CHA) affiche le meilleur pourcentage à 3 points parmi les joueurs à volume significatif (minimum 100 tentatives), avec 45,6% de réussite sur 184 tentatives à 3 points. Il devance Zach LaVine (SAC, 44,6% sur 533 tentatives) et Ty Jerome (CLE, 43,9% sur 252 tentatives).",
+    "category": "Chiffré / Analytique"
+  }
+]
