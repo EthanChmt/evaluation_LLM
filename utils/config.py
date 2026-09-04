@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 
 # Charger les variables d'environnement du fichier .env
 load_dotenv()
-
+# Active la validation qualité des chunks via Pydantic AI (coûteux : 1 appel LLM par chunk)
+ENABLE_AI_CHUNK_VALIDATION = False
 # --- Clé API ---
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 if not MISTRAL_API_KEY:
