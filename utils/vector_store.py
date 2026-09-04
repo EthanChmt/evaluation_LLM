@@ -5,25 +5,23 @@ import faiss
 import numpy as np
 import logging
 from typing import List, Dict, Tuple, Optional
-from mistralai.client import MistralClient
-from mistralai.exceptions import MistralAPIException
+from langchain_mistralai import MistralAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document # Utilisé pour le format attendu par le splitter
 import logfire
 from pydantic import BaseModel, Field, ValidationError
-
+from schemas.models import ValidatedChunk
 # --- Configuration Logfire & Pydantic ---
 logfire.configure()
 logfire.instrument_pydantic()
 
-class ValidatedChunk(BaseModel):
-    """Modèle strict pour s'assurer qu'aucun chunk corrompu ne rentre dans l'index."""
-    text: str = Field(..., min_length=15, description="Le texte du chunk doit être suffisamment long pour avoir du sens.")
-    metadata: dict = Field(..., description="Les métadonnées associées au document source.")
+
 from .config import (
     MISTRAL_API_KEY, EMBEDDING_MODEL, EMBEDDING_BATCH_SIZE,
-    FAISS_INDEX_FILE, DOCUMENT_CHUNKS_FILE, CHUNK_SIZE, CHUNK_OVERLAP
+    FAISS_INDEX_FILE, DOCUMENT_CHUNKS_FILE, CHUNK_SIZE, CHUNK_OVERLAP,
+    ENABLE_AI_CHUNK_VALIDATION,
 )
+from .chunk_validator import validate_chunk_quality
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -33,7 +31,7 @@ class VectorStoreManager:
     def __init__(self):
         self.index: Optional[faiss.Index] = None
         self.document_chunks: List[Dict[str, any]] = []
-        self.mistral_client = MistralClient(api_key=MISTRAL_API_KEY)
+        self.embeddings_client = MistralAIEmbeddings(model=EMBEDDING_MODEL, mistral_api_key=MISTRAL_API_KEY)
         self._load_index_and_chunks()
 
     @logfire.instrument("Chargement de l'index et des chunks")
@@ -84,15 +82,31 @@ class VectorStoreManager:
                     }
                 }
                 try:
-                    # On utilise Pydantic juste comme "videur" pour vérifier le texte et les métadonnées
+                    # 1. Validation structurelle rapide (Pydantic classique) : longueur, présence de métadonnées
                     ValidatedChunk(text=chunk_dict["text"], metadata=chunk_dict["metadata"])
-                    
-                    # Si ça passe, on ajoute le dictionnaire ORIGINAL (qui contient bien l' "id")
-                    all_chunks.append(chunk_dict)
                 except ValidationError as e:
                     # On envoie l'alerte rouge sur Logfire
-                    logfire.error("Chunk rejeté par Pydantic", error=e.errors(), chunk_id=chunk_dict["id"])
+                    logfire.error("Chunk rejeté par Pydantic (structurel)", error=e.errors(), chunk_id=chunk_dict["id"])
                     logging.warning(f"Chunk {chunk_dict['id']} ignoré (invalide ou trop court).")
+                    continue
+
+                # 2. Validation sémantique optionnelle (Pydantic AI) : contenu réellement exploitable ?
+                # Coûteuse (1 appel LLM par chunk) -> activable via ENABLE_AI_CHUNK_VALIDATION.
+                if ENABLE_AI_CHUNK_VALIDATION:
+                    report = validate_chunk_quality(chunk_dict["text"])
+                    if not report.is_usable:
+                        logfire.warning(
+                            "Chunk rejeté par Pydantic AI (qualité sémantique)",
+                            chunk_id=chunk_dict["id"],
+                            reason=report.reason,
+                        )
+                        logging.warning(f"Chunk {chunk_dict['id']} ignoré (qualité IA insuffisante: {report.reason}).")
+                        continue
+                    if report.cleaned_text:
+                        chunk_dict["text"] = report.cleaned_text
+
+                # Si les deux validations passent, on ajoute le dictionnaire ORIGINAL (qui contient bien l' "id")
+                all_chunks.append(chunk_dict)
             doc_counter += 1
 
         logging.info(f"Total de {len(all_chunks)} chunks créés.")
@@ -119,34 +133,15 @@ class VectorStoreManager:
 
             logging.info(f"  Traitement du lot {batch_num}/{total_batches} ({len(texts_to_embed)} chunks)")
             try:
-                response = self.mistral_client.embeddings(
-                    model=EMBEDDING_MODEL,
-                    input=texts_to_embed
-                )
-                batch_embeddings = [data.embedding for data in response.data]
+                batch_embeddings = self.embeddings_client.embed_documents(texts_to_embed)
                 all_embeddings.extend(batch_embeddings)
-            except MistralAPIException as e:
-                logging.error(f"Erreur API Mistral lors de la génération d'embeddings (lot {batch_num}): {e}")
-                logging.error(f"  Détails: Status Code={e.status_code}, Message={e.message}")
             except Exception as e:
-                logging.error(f"Erreur inattendue lors de la génération d'embeddings (lot {batch_num}): {e}")
+                logging.error(f"Erreur lors de la génération d'embeddings (lot {batch_num}): {e}")
                  # Gérer l'erreur: ici on ajoute des vecteurs nuls pour ne pas bloquer
                 num_failed = len(texts_to_embed)
                 if all_embeddings: # Si on a déjà des embeddings, on prend la dimension du premier
                     dim = len(all_embeddings[0])
                 else: # Sinon, on ne peut pas déterminer la dimension, on saute ce lot
-                     logging.error("Impossible de déterminer la dimension des embeddings, saut du lot.")
-                     continue
-                logging.warning(f"Ajout de {num_failed} vecteurs nuls de dimension {dim} pour le lot échoué.")
-                all_embeddings.extend([np.zeros(dim, dtype='float32')] * num_failed)
-
-            except Exception as e:
-                logging.error(f"Erreur inattendue lors de la génération d'embeddings (lot {batch_num}): {e}")
-                # Gérer comme ci-dessus
-                num_failed = len(texts_to_embed)
-                if all_embeddings:
-                    dim = len(all_embeddings[0])
-                else:
                      logging.error("Impossible de déterminer la dimension des embeddings, saut du lot.")
                      continue
                 logging.warning(f"Ajout de {num_failed} vecteurs nuls de dimension {dim} pour le lot échoué.")
@@ -244,11 +239,7 @@ class VectorStoreManager:
         logging.info(f"Recherche des {k} chunks les plus pertinents pour: '{query_text}'")
         try:
             # 1. Générer l'embedding de la requête
-            response = self.mistral_client.embeddings(
-                model=EMBEDDING_MODEL,
-                input=[query_text] # La requête doit être une liste
-            )
-            query_embedding = np.array([response.data[0].embedding]).astype('float32')
+            query_embedding = np.array([self.embeddings_client.embed_query(query_text)]).astype('float32')
 
             # Normaliser l'embedding de la requête pour la similarité cosinus
             faiss.normalize_L2(query_embedding)
@@ -303,10 +294,6 @@ class VectorStoreManager:
 
             return results
 
-        except MistralAPIException as e:
-            logging.error(f"Erreur API Mistral lors de la génération de l'embedding de la requête: {e}")
-            logging.error(f"  Détails: Status Code={e.status_code}, Message={e.message}")
-            return []
         except Exception as e:
             logging.error(f"Erreur inattendue lors de la recherche: {e}")
             return []
