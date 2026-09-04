@@ -1,5 +1,4 @@
 streamlit==1.44.1
-mistralai==0.4.2
 langchain==0.3.23
 langchain-community==0.3.21
 langchain-mistralai==0.2.12
@@ -18,5 +17,6 @@ tqdm
 ragas>=0.2.0
 datasets>=2.16.0
 pydantic>=2.0.0
-pydantic-ai>=0.0.1
+pydantic-ai-slim[mistral]>=0.0.1
 logfire>=0.5.0
+langsmith
