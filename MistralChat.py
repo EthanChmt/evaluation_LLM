@@ -1,3 +1,21 @@
+"""
+Script principal de l'application Streamlit pour l'agent hybride SportSee R&D.
+
+Cette application fournit une interface de messagerie interactive pour l'assistant 
+d'analyse de performance SportSee. Elle intègre un agent LangChain propulsé 
+par Mistral AI, combinant l'interrogation de base de données SQL et la recherche 
+vectorielle (RAG) pour traiter les requêtes qualitatives et quantitatives.
+
+Fonctionnalités principales :
+- Interface utilisateur conversationnelle via Streamlit.
+- Configuration de la traçabilité de l'exécution avec Logfire et OpenTelemetry.
+- Chargement sécurisé et mise en cache de l'index vectoriel.
+- Initialisation et exécution de l'agent LangChain avec le "tool-calling" natif.
+
+Exécution :
+    streamlit run MistralChat.py
+"""
+
 import streamlit as st
 import logging
 import os

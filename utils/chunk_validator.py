@@ -1,14 +1,14 @@
-# utils/chunk_validator.py
 """
-Couche de validation "sémantique" des chunks avant embedding, basée sur Pydantic AI.
+Module de validation sémantique des segments textuels (chunks) via Pydantic AI.
 
-Différence avec ValidatedChunk (models.py, Pydantic classique) :
-- ValidatedChunk vérifie des contraintes STRUCTURELLES (longueur minimale, présence
-  de métadonnées) — c'est rapide, gratuit, mais aveugle au CONTENU.
-- Ce module utilise un Agent Pydantic AI (LLM + schéma de sortie garanti) pour juger
-  la qualité sémantique du texte : OCR corrompu, contenu hors-sujet, chunk tronqué
-  sans information exploitable, etc. C'est plus coûteux (1 appel LLM par chunk),
-  donc à activer sélectivement (voir ENABLE_AI_CHUNK_VALIDATION dans config.py).
+Ce script agit comme un filtre d'assurance qualité avant la génération des embeddings. 
+Contrairement à une simple validation structurelle (longueur, format), il utilise 
+un agent IA (Mistral) pour évaluer la pertinence sémantique du texte (ex: 
+détection de texte OCR corrompu ou de contenu vide de sens) de façon à ne garder 
+que les informations utiles à l'analyse sportive.
+
+Une logique "fail-open" est implémentée pour garantir que l'indexation ne soit 
+pas bloquée en cas d'indisponibilité de l'API LLM.
 """
 import logging
 from typing import Optional

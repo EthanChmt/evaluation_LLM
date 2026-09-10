@@ -1,11 +1,14 @@
-# utils/agent.py
 """
-Construction centralisée de l'agent SportSee (tool-calling Mistral).
+Module de construction centralisée de l'agent LangChain SportSee.
 
-Ce module est partagé entre MistralChat.py (application Streamlit) et
-evaluate_ragas.py (script d'évaluation). Objectif : garantir qu'on évalue
-exactement le même agent que celui utilisé en production, et éviter la
-divergence qu'on avait entre sql_tool.py et sql_search.py.
+Ce script définit et configure l'AgentExecutor utilisant le "tool-calling" natif 
+de Mistral AI. Il dote l'agent de deux outils principaux : une recherche SQL 
+pour les données quantitatives (statistiques de la NBA) et une recherche RAG 
+pour les données qualitatives (archives et rapports).
+
+L'isolation de cette logique permet de garantir que l'agent exécuté en production 
+via Streamlit est strictement identique à celui testé dans les pipelines 
+d'évaluation (comme RAGAS).
 """
 from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder

@@ -1,3 +1,21 @@
+"""
+Script d'ingestion et de modélisation de données SQL pour les statistiques sportives.
+
+Ce script extrait les données d'un fichier Excel contenant les statistiques régulières 
+de la NBA, les valide et les structure à l'aide de modèles de données (Pydantic), 
+puis les charge dans une base de données SQLite locale. Le processus complet 
+est instrumenté et tracé via Logfire.
+
+Fonctionnalités principales :
+- Création automatique du schéma relationnel SQLite (tables 'players' et 'season_stats').
+- Nettoyage et mapping complexe des colonnes Excel (gestion des exceptions de format).
+- Validation rigoureuse des données via PlayerModel et SeasonStatModel.
+- Insertion relationnelle avec gestion automatique des identifiants (clés étrangères).
+
+Exécution :
+    python scripts/load_excel_to_db.py
+"""
+*
 import os
 import sys
 import pandas as pd

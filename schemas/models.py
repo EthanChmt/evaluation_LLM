@@ -1,3 +1,13 @@
+"""
+Définition des schémas de validation des données avec Pydantic.
+
+Ce module regroupe les modèles stricts utilisés pour garantir l'intégrité 
+et le typage des informations traversant le pipeline de l'application :
+- Validation structurelle des segments de texte (chunks) et de leurs métadonnées 
+  avant l'indexation vectorielle (RAG).
+- Modélisation des entités relationnelles (joueurs et statistiques saisonnières NBA) 
+  pour l'ingestion sécurisée dans la base de données SQL.
+"""
 from pydantic import BaseModel, Field
 from typing import Optional
 

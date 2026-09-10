@@ -1,4 +1,17 @@
 # utils/data_loader.py
+
+"""
+Pipeline d'ingestion et d'extraction de texte multi-formats.
+
+Ce script parcourt les répertoires sources pour extraire le contenu brut de divers 
+types de documents (PDF, DOCX, TXT, CSV, Excel). Il intègre un mécanisme de fallback 
+robuste reposant sur la reconnaissance optique de caractères (OCR via EasyOCR) 
+pour récupérer le texte des PDF non natifs ou numérisés.
+
+Chaque document extrait est retourné sous forme de dictionnaire structuré 
+associant le texte brut à ses métadonnées d'origine (chemin, catégorie, etc.).
+"""
+
 import os
 import requests
 import zipfile

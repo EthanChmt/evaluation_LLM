@@ -1,4 +1,14 @@
 # utils/config.py
+
+"""
+Configuration globale et gestion des variables d'environnement du projet.
+
+Ce module centralise tous les paramètres essentiels au fonctionnement de 
+l'application analytique NBA : clés API, sélection des modèles d'embedding 
+et de complétion (Mistral), paramètres de découpage (chunking), 
+chemins d'accès aux bases de données (SQLite, FAISS) et métadonnées de l'interface.
+"""
+
 import os
 from dotenv import load_dotenv
 

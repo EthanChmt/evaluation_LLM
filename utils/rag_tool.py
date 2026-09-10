@@ -1,4 +1,13 @@
 # utils/rag_tool.py
+"""
+Outil LangChain de recherche sémantique (RAG) sur les archives textuelles.
+
+Ce module encapsule le VectorStoreManager dans une interface `Tool` standardisée 
+pour LangChain. Il est destiné à être invoqué par le LLM pour répondre aux questions 
+qualitatives et contextuelles (ex: rapports de matchs, analyses tactiques) 
+en récupérant les extraits les plus pertinents par similarité cosinus.
+"""
+
 from langchain_core.tools import Tool
 
 

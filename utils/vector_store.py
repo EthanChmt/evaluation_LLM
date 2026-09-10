@@ -1,4 +1,17 @@
 # utils/vector_store.py
+"""
+Gestionnaire de la base de données vectorielle FAISS et du pipeline d'embedding.
+
+Ce module orchestre le cycle de vie complet des données textuelles qualitatives :
+1. Découpage (chunking) des documents via `RecursiveCharacterTextSplitter`.
+2. Validation structurelle et sémantique (Pydantic / Pydantic AI) des segments.
+3. Génération d'embeddings vectoriels par lots via l'API Mistral.
+4. Construction, sauvegarde et interrogation d'un index FAISS optimisé pour 
+   la recherche par similarité cosinus.
+
+Toutes les étapes critiques de ce pipeline sont instrumentées avec Logfire 
+pour le suivi des performances et la détection d'anomalies.
+"""
 import os
 import pickle
 import faiss

@@ -1,3 +1,16 @@
+"""
+Outil LangChain d'interrogation de base de données relationnelle (Text-to-SQL).
+
+Ce module permet au LLM de traduire une requête en langage naturel en commande SQL, 
+de l'exécuter sur la base de données SQLite contenant les statistiques NBA, 
+et d'en extraire le résultat. 
+
+Il intègre un système de prompt "Few-Shot" avec des exemples spécifiques 
+au domaine du basketball pour orienter la génération de la requête, 
+ainsi qu'une traçabilité Logfire pour monitorer les erreurs de syntaxe et d'exécution.
+"""
+
+
 import os
 import logging
 import logfire

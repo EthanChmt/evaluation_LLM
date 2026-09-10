@@ -1,3 +1,22 @@
+"""
+Script de test d'intégration pour l'outil LangChain d'interrogation SQL.
+
+Ce script permet de valider le fonctionnement du Tool SQL personnalisé avant 
+son intégration dans l'agent hybride. Il instancie un modèle de langage Mistral AI 
+et vérifie sa capacité à transformer une question en langage naturel en requête SQL 
+exécutable sur la base de données des statistiques.
+
+Fonctionnalités principales :
+- Chargement sécurisé des variables d'environnement (clés API, nom du modèle).
+- Instanciation du modèle ChatMistralAI configuré pour des réponses déterministes (température = 0).
+- Création et invocation du composant `build_nba_sql_tool`.
+- Test de bout en bout avec une question analytique précise.
+- Traçabilité de l'exécution LLM et des requêtes SQL générées via Logfire.
+
+Exécution :
+    python scripts/test_sql_tool.py
+"""
+
 import os
 import sys
 import logfire
