@@ -83,9 +83,20 @@ SQLQuery:"""
                 error=str(e),
             )
             return (
-                "Erreur technique : impossible de traduire la question en requête SQL. "
+                "SQL_QUERY: (échec de génération)\n"
+                "RESULT: Erreur technique : impossible de traduire la question en requête SQL. "
                 "Reformule la question ou utilise NBA_Archives_Search si elle est qualitative."
             )
+
+        # On journalise la requête générée dès qu'on l'a, indépendamment du succès de son
+        # exécution : ça permet d'auditer séparément "le LLM a-t-il généré une requête
+        # plausible" et "cette requête s'est-elle exécutée correctement" (cf. eval/evaluate_ragas.py).
+        # Avant ce patch, seuls les cas d'échec loggaient sql_query, et jamais les succès.
+        logfire.info(
+            "Requête SQL générée par le LLM",
+            question=question,
+            sql_query=sql_query,
+        )
 
         # 2. Exécution de la requête générée
         try:
@@ -99,16 +110,22 @@ SQLQuery:"""
                 error=str(e),
             )
             return (
-                f"Erreur technique : la requête SQL générée n'a pas pu être exécutée ({e}). "
+                f"SQL_QUERY: {sql_query}\n"
+                f"RESULT: Erreur technique : la requête SQL générée n'a pas pu être exécutée ({e}). "
                 "La base ne contient probablement pas cette information, ou la question est mal formulée."
             )
 
         # 3. Résultat vide (question valide mais rien trouvé)
         if not result or result in ("[]", "()"):
             logging.info(f"Requête SQL exécutée sans résultat pour: '{question}' -> {sql_query}")
-            return "Aucun résultat trouvé dans la base SQL pour cette question."
+            return f"SQL_QUERY: {sql_query}\nRESULT: Aucun résultat trouvé dans la base SQL pour cette question."
 
-        return result
+        # NB : la réponse est désormais préfixée par "SQL_QUERY: ...\nRESULT: ..." dans
+        # tous les cas (succès et erreurs) plutôt que de renvoyer 'result' seul. Deux
+        # bénéfices : (1) eval/evaluate_ragas.py peut extraire la requête générée pour
+        # l'évaluer indépendamment de la réponse finale en langage naturel ; (2) l'agent
+        # dispose de la requête SQL exacte pour citer sa source (cf. règle 4 du prompt).
+        return f"SQL_QUERY: {sql_query}\nRESULT: {result}"
 
     return Tool(
         name="NBA_Stats_SQL",

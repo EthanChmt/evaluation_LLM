@@ -50,3 +50,12 @@ data/
 *.xlsx
 *.docx
 *.db
+
+evaluation_resultsV3.json
+evaluation_resultsV4.json
+evaluation_results_V2.json
+evaluation_results.json
+agent_outputs_V3.json
+rescore_faithfulness.py
+score_from_trace.py
+eval_result_2
